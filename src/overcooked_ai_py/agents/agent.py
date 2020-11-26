@@ -70,7 +70,7 @@ class AgentFromModel(Agent):
         obs = torch.tensor(self.featurize_fn(state)[self.agent_index], dtype = torch.float32)
         with torch.no_grad():
             distribution = Categorical(logits = self.model(obs))
-            return Action.INDEX_TO_ACTION[distribution.sample().numpy()]
+            return Action.INDEX_TO_ACTION[distribution.sample().numpy()], None
 
     def set_featurize_fn(self, featurize_fn):
         self.featurize_fn = featurize_fn
