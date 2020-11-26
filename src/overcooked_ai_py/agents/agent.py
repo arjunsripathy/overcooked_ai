@@ -62,16 +62,19 @@ class Agent(object):
 import torch
 from torch.distributions.categorical import Categorical
 class AgentFromModel(Agent):
-    def __init__(self, model, featurize_fn, agent_index):
+    def __init__(self, model, agent_index):
         self.model = model
-        self.featurize_fn = featurize_fn
+        self.featurize_fn = None
         self.agent_index = agent_index
         
     def action(self, state):
-        obs = torch.tensor(self.featurize(state)[self.agent_index], dtype = torch.float32)
+        obs = torch.tensor(self.featurize_fn(state)[self.agent_index], dtype = torch.float32)
         with torch.no_grad():
             distribution = Categorical(logits = self.model(state))
             return distribution.sample().numpy()
+
+    def set_featurize_fn(self, featurize_fn):
+        self.featurize_fn = featurize_fn
 
 class AgentGroup(object):
     """
