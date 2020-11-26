@@ -71,10 +71,8 @@ class AgentFromModel(Agent):
         feat_obs_t = torch.tensor(feat_obs, dtype = torch.float32)
         with torch.no_grad():
             distribution = Categorical(logits = self.model(feat_obs_t))
-            return Action.INDEX_TO_ACTION[distribution.sample().numpy()], None
-
-    def set_featurize_fn(self, featurize_fn):
-        self.featurize_fn = featurize_fn
+            act_index = distribution.sample().numpy()
+            return Action.INDEX_TO_ACTION[act_index], None
 
 class AgentGroup(object):
     """
