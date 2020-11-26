@@ -55,7 +55,6 @@ class Agent(object):
         One should always reset agents in between trajectory rollouts, as resetting
         usually clears history or other trajectory-specific attributes.
         """
-        self.agent_index = None
         self.mdp = None
 
 import torch
@@ -67,9 +66,11 @@ class AgentFromModel(Agent):
         self.agent_index = agent_index
         
     def action(self, state):
-        obs = torch.tensor(self.featurize_fn(state)[self.agent_index], dtype = torch.float32)
+        feat_state = self.featurize_fn(state)
+        feat_obs = feat_state[self.agent_index]
+        feat_obs_t = torch.tensor(feat_obs, dtype = torch.float32)
         with torch.no_grad():
-            distribution = Categorical(logits = self.model(obs))
+            distribution = Categorical(logits = self.model(feat_obs_t))
             return Action.INDEX_TO_ACTION[distribution.sample().numpy()], None
 
     def set_featurize_fn(self, featurize_fn):
