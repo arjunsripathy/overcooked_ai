@@ -1,6 +1,5 @@
 import itertools, math
 import numpy as np
-
 from overcooked_ai_py.mdp.actions import Action
 
 
@@ -70,8 +69,8 @@ class AgentFromModel(Agent):
     def action(self, state):
         obs = torch.tensor(self.featurize_fn(state)[self.agent_index], dtype = torch.float32)
         with torch.no_grad():
-            distribution = Categorical(logits = self.model(state))
-            return distribution.sample().numpy()
+            distribution = Categorical(logits = self.model(obs))
+            return Action.INDEX_TO_ACTION[distribution.sample().numpy()]
 
     def set_featurize_fn(self, featurize_fn):
         self.featurize_fn = featurize_fn
