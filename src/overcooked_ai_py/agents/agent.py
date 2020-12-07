@@ -71,8 +71,6 @@ class AgentFromModel(Agent):
         feat_obs_t = torch.tensor(feat_obs, dtype = torch.float32)
         with torch.no_grad():
             action_logits = self.model(feat_obs_t)
-            # Give no probability to stay action
-            action_logits[4] = -float('inf')
             distribution = Categorical(logits = action_logits)
             act_index = distribution.sample().numpy()
             return Action.INDEX_TO_ACTION[act_index], None
