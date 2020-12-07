@@ -70,8 +70,7 @@ class AgentFromModel(Agent):
         feat_obs = feat_state[self.agent_index]
         feat_obs_t = torch.tensor(feat_obs, dtype = torch.float32)
         with torch.no_grad():
-            action_logits = self.model(feat_obs_t)
-            distribution = Categorical(logits = action_logits)
+            distribution = Categorical(logits = self.model(feat_obs_t))
             act_index = distribution.sample().numpy()
             return Action.INDEX_TO_ACTION[act_index], None
 
