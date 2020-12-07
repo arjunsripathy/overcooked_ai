@@ -15,14 +15,11 @@ MAX_HORIZON = 1e10
 class OvercookedEnv(object):
     """
     An environment wrapper for the OvercookedGridworld Markov Decision Process.
-
     The environment keeps track of the current state of the agent, updates
     it as the agent takes actions, and provides rewards to the agent.
-
     E.g. of how to instantiate OvercookedEnv:
     > mdp = OvercookedGridworld(...)
     > env = OvercookedEnv.from_mdp(mdp, horizon=400)
-
     The standard format for Overcooked trajectories is:
     trajs = {
         # With shape (n_episodes, game_len), where game_len might vary across games:
@@ -31,13 +28,11 @@ class OvercookedEnv(object):
         "ep_rewards":   [ [traj_1_timestep_rewards], [traj_2_timestep_rewards], ... ],      # (Sparse) reward values by timestep
         "ep_dones":     [ [traj_1_timestep_dones], [traj_2_timestep_dones], ... ],          # Done values (should be all 0s except last one for each traj) TODO: add this to traj checks
         "ep_infos":     [ [traj_1_timestep_infos], [traj_2_traj_1_timestep_infos], ... ],   # Info dictionaries
-
         # With shape (n_episodes, ):
         "ep_returns":   [ cumulative_traj1_reward, cumulative_traj2_reward, ... ],          # Sum of sparse rewards across each episode
         "ep_lengths":   [ traj1_length, traj2_length, ... ],                                # Lengths (in env timesteps) of each episode
         "mdp_params":   [ traj1_mdp_params, traj2_mdp_params, ... ],                        # Custom Mdp params to for each episode
         "env_params":   [ traj1_env_params, traj2_env_params, ... ],                        # Custom Env params for each episode
-
         # Custom metadata key value pairs
         "metadatas":    [{custom metadata key:value pairs for traj 1}, {...}, ...]          # Each metadata dictionary is of similar format to the trajectories dictionary
     }
@@ -61,7 +56,6 @@ class OvercookedEnv(object):
         info_level (int):               Change amount of logging
         num_mdp (int):                  the number of mdp if we are using a list of mdps
         initial_info (dict):            the initial outside information feed into the generator function
-
         TODO: Potentially make changes based on this discussion
         https://github.com/HumanCompatibleAI/overcooked_ai/pull/22#discussion_r416786847
         """
@@ -227,7 +221,9 @@ class OvercookedEnv(object):
         if done: self._add_episode_info(env_info)
 
         timestep_sparse_reward = sum(mdp_infos["sparse_reward_by_agent"])
-        return (next_state, timestep_sparse_reward, done, env_info)
+        #Adding in shaped reward
+        timestep_shaped_reward = sum(mdp_infos["shaped_reward_by_agent"])
+        return (next_state, timestep_sparse_reward, timestep_shaped_reward, done, env_info)
 
     def lossless_state_encoding_mdp(self, state):
         """
@@ -390,13 +386,10 @@ class OvercookedEnv(object):
         """
         Simulate `num_games` number rollouts with the current agent_pair and returns processed 
         trajectories.
-
         Returning excessive information to be able to convert trajectories to any required format 
         (baselines, stable_baselines, etc)
-
         metadata_fn returns some metadata information computed at the end of each trajectory based on
         some of the trajectory data.
-
         NOTE: this is the standard trajectories format used throughout the codebase
         """
         trajectories = { k:[] for k in self.DEFAULT_TRAJ_KEYS }
@@ -475,7 +468,6 @@ class OvercookedEnv(object):
             ...
         }
         with as keys the keys returned by the agent in it's agent_info dictionary
-
         NOTE: deprecated
         """
         agent_infos = []
@@ -497,7 +489,6 @@ class OvercookedEnv(object):
         """
         Simple util for calculating a guess for the proportion of time in the trajectories
         during which the agent with the desired agent index was stuck.
-
         NOTE: deprecated
         """
         stuck_matrix = []
@@ -522,7 +513,6 @@ class OvercookedEnv(object):
 class Overcooked(gym.Env):
     """
     Wrapper for the Env class above that is SOMEWHAT compatible with the standard gym API.
-
     NOTE: Observations returned are in a dictionary format with various information that is
     necessary to be able to handle the multi-agent nature of the environment. There are probably
     better ways to handle this, but we found this to work with minor modifications to OpenAI Baselines.
@@ -607,7 +597,6 @@ class Overcooked(gym.Env):
         When training on individual maps, we want to randomize which agent is assigned to which
         starting location, in order to make sure that the agents are trained to be able to 
         complete the task starting at either of the hardcoded positions.
-
         NOTE: a nicer way to do this would be to just randomize starting positions, and not
         have to deal with randomizing indices.
         """

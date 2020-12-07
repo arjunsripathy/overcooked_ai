@@ -60,11 +60,10 @@ class Agent(object):
 import torch
 from torch.distributions.categorical import Categorical
 class AgentFromModel(Agent):
-    def __init__(self, model, agent_index, agent_dir):
+    def __init__(self, model, agent_index):
         self.model = model
         self.featurize_fn = None
         self.agent_index = agent_index
-        self.is_bc_agent = "_bc" in agent_dir
         
     def action(self, state):
         feat_state = self.featurize_fn(state)
@@ -72,9 +71,6 @@ class AgentFromModel(Agent):
         feat_obs_t = torch.tensor(feat_obs, dtype = torch.float32)
         with torch.no_grad():
             action_logits = self.model(feat_obs_t)
-            if (self.is_bc_agent):
-                # don't allow stay action if bc agent.
-                action_logis[4] = -float('inf')
             distribution = Categorical(logits = action_logits)
             act_index = distribution.sample().numpy()
             return Action.INDEX_TO_ACTION[act_index], None
