@@ -73,7 +73,6 @@ class AgentFromModel(Agent):
             action_logits = self.model(feat_obs_t)
             # Give no probability to stay action
             action_logits[4] = -float('inf')
-            return -1
             distribution = Categorical(logits = action_logits)
             act_index = distribution.sample().numpy()
             return Action.INDEX_TO_ACTION[act_index], None
